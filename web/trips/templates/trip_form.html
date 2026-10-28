@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create trip · TripSplit{% endblock %}
+{% block content %}
+<section class="card form-stack">
+    <h1>Create trip</h1>
+    <form method="post" data-disable-on-submit>
+        {% csrf_token %}
+        <p>
+            <label for="{{ form.name.id_for_label }}">Trip name</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+        </p>
+        <p>
+            <label for="{{ form.budget.id_for_label }}">Budget (optional)</label>
+            {{ form.budget }}
+            {{ form.budget.errors }}
+        </p>
+        <button type="submit">Save trip</button>
+        <a class="button secondary" href="{% url 'dashboard' %}">Cancel</a>
+    </form>
+</section>
+{% endblock %}

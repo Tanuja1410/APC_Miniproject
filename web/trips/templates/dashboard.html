@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}TripSplit Dashboard{% endblock %}
+{% block content %}
+<header class="topbar">
+    <div>
+        <h1>TripSplit</h1>
+        <p class="muted">Simple group trip expenses</p>
+    </div>
+    <nav class="actions">
+        <a class="button secondary" href="{% url 'dashboard' %}{% if trip %}?trip={{ trip.id }}&amp;refresh=1{% else %}?refresh=1{% endif %}">Refresh</a>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="secondary-button" type="submit">Log out</button>
+        </form>
+    </nav>
+</header>
+
+{% if trips %}
+    <nav class="trip-nav" aria-label="Trips">
+        {% for item in trips %}
+            <a class="{% if trip.id == item.id %}selected{% endif %}" href="{% url 'dashboard' %}?trip={{ item.id }}">{{ item.name }}</a>
+        {% endfor %}
+        <a class="new-trip" href="{% url 'create_trip' %}">+ New trip</a>
+    </nav>
+{% endif %}
+
+{% if not trip %}
+    <section class="card">
+        <h2>Create your first trip</h2>
+        <p class="muted">Create a trip, add members, then record expenses.</p>
+        <a class="button" href="{% url 'create_trip' %}">Create trip</a>
+    </section>
+{% else %}
+    <section class="card summary">
+        <div><span>Total trips</span><strong>{{ trips|length }}</strong></div>
+        <div><span>Expenses in {{ trip.name }}</span><strong>₹{{ summary.total|floatformat:2 }}</strong></div>
+        <div>
+            <span>Remaining budget</span>
+            <strong>{% if summary.remaining is None %}No limit{% else %}₹{{ summary.remaining|floatformat:2 }}{% endif %}</strong>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading">
+            <div>
+                <h2>{{ trip.name }}</h2>
+                <p class="muted">Budget: ₹{{ trip.budget|floatformat:2 }}</p>
+            </div>
+            <a class="button secondary" href="{% url 'report' trip.id %}">View report</a>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Add a member</h2>
+        <form class="form-row" method="post" action="{% url 'add_member' trip.id %}" data-disable-on-submit>
+            {% csrf_token %}
+            <input name="name" maxlength="100" placeholder="Member name" aria-label="Member name" required>
+            <input name="mobile" maxlength="20" placeholder="Mobile (optional)" aria-label="Mobile number">
+            <button type="submit">Add member</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Add an expense</h2>
+        {% if summary.members %}
+            <form method="post" action="{% url 'add_expense' trip.id %}" data-disable-on-submit>
+                {% csrf_token %}
+                <div class="form-row">
+                    <input name="name" maxlength="100" placeholder="Expense name" aria-label="Expense name" required>
+                    <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" aria-label="Amount" required>
+                    <select name="paid_by" aria-label="Paid by" required>
+                        {% for member in summary.members %}
+                            <option value="{{ member.id }}">{{ member.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input name="category" maxlength="50" placeholder="Category (optional)" aria-label="Category">
+                    <input name="description" maxlength="500" placeholder="Description (optional)" aria-label="Description">
+                </div>
+                <fieldset class="participants">
+                    <legend>Who shares this expense?</legend>
+                    <div class="check-list">
+                        {% for member in summary.members %}
+                            <label><input type="checkbox" name="participants" value="{{ member.id }}"> {{ member.name }}</label>
+                        {% endfor %}
+                    </div>
+                    <p class="muted">Leave all unchecked to split equally with everyone.</p>
+                </fieldset>
+                <button type="submit">Save expense</button>
+            </form>
+        {% else %}
+            <p class="muted">Add at least one member before adding an expense.</p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Members and balances</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Member</th><th>Paid</th><th>Share</th><th>Balance</th></tr></thead>
+                <tbody>
+                    {% for row in summary.member_rows %}
+                        <tr>
+                            <td>{{ row.member.name }}</td>
+                            <td>₹{{ row.paid|floatformat:2 }}</td>
+                            <td>₹{{ row.share|floatformat:2 }}</td>
+                            <td>{% if row.balance > 0 %}Receives{% elif row.balance < 0 %}Owes{% else %}Settled{% endif %} ₹{{ row.balance_amount|floatformat:2 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4">No members yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Expenses</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Name</th><th>Amount</th><th>Paid by</th><th>Category</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for row in summary.expenses %}
+                        <tr>
+                            <td>{{ row.expense.name }}</td>
+                            <td>₹{{ row.expense.amount|floatformat:2 }}</td>
+                            <td>{{ row.expense.paid_by.name }}</td>
+                            <td>{{ row.expense.category|default:"Other" }}</td>
+                            <td>{{ row.expense.created_at }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5">No expenses yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Suggested settlements</h2>
+        {% if summary.settlements %}
+            <ul class="settlements">
+                {% for item in summary.settlements %}
+                    <li>{{ item.from }} pays {{ item.to }} ₹{{ item.amount|floatformat:2 }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">Everyone is settled.</p>
+        {% endif %}
+    </section>
+{% endif %}
+{% endblock %}

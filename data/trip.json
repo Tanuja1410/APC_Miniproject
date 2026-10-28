@@ -1,0 +1,52 @@
+{
+  "name": "Kolhapur",
+  "budget": 1000.0,
+  "start_date": "2026-09-15",
+  "end_date": "2026-09-15",
+  "next_member_id": 2,
+  "next_expense_id": 3,
+  "members": [
+    {
+      "member_id": 1,
+      "name": "Tanuja",
+      "mobile": "9158630136",
+      "paid": 800.0,
+      "balance": 0.0
+    }
+  ],
+  "expenses": [
+    {
+      "expense_id": 1,
+      "name": "500",
+      "amount": 300.0,
+      "paid_by": "Tanuja",
+      "category": "Food",
+      "participants": [
+        "Tanuja"
+      ],
+      "shares": {
+        "Tanuja": 300.0
+      },
+      "date": "2026-10-17",
+      "description": "",
+      "type": "EqualExpense"
+    },
+    {
+      "expense_id": 2,
+      "name": "50",
+      "amount": 500.0,
+      "paid_by": "Tanuja",
+      "category": "Travel",
+      "participants": [
+        "Tanuja"
+      ],
+      "shares": {
+        "Tanuja": 500.0
+      },
+      "date": "2026-10-17",
+      "description": "",
+      "type": "EqualExpense"
+    }
+  ],
+  "updated_at": "2026-10-17T20:14:13"
+}

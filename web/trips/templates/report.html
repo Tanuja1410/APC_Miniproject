@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.name }} Report · TripSplit{% endblock %}
+{% block content %}
+<header class="topbar report-actions">
+    <div>
+        <h1>{{ trip.name }} report</h1>
+        <p class="muted">Expense summary and suggested settlements</p>
+    </div>
+    <nav class="actions no-print">
+        <a class="button secondary" href="{% url 'dashboard' %}?trip={{ trip.id }}">Back to dashboard</a>
+        <a class="button" href="{% url 'report' trip.id %}?download=1">Download report</a>
+        <button class="secondary-button" type="button" onclick="window.print()">Print</button>
+    </nav>
+</header>
+
+{% if save_error %}<p class="message error">{{ save_error }}</p>{% endif %}
+
+<section class="card report-summary">
+    <h2>{{ trip.name }}</h2>
+    <p>Budget: ₹{{ trip.budget|floatformat:2 }}</p>
+    <p>Total expenses: <strong>₹{{ summary.total|floatformat:2 }}</strong></p>
+    <p>Remaining budget: {% if summary.remaining is None %}No budget limit{% else %}₹{{ summary.remaining|floatformat:2 }}{% endif %}</p>
+</section>
+
+<section class="card">
+    <h2>Expenses and individual shares</h2>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Expense</th><th>Amount</th><th>Paid by</th><th>Shared by</th></tr></thead>
+            <tbody>
+                {% for row in summary.expenses %}
+                    <tr>
+                        <td>{{ row.expense.name }}</td>
+                        <td>₹{{ row.expense.amount|floatformat:2 }}</td>
+                        <td>{{ row.expense.paid_by.name }}</td>
+                        <td>
+                            {% for share in row.shares %}
+                                {{ share.name }}: ₹{{ share.amount|floatformat:2 }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                No participants
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">No expenses yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Member contributions and balances</h2>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Member</th><th>Paid</th><th>Share</th><th>Balance</th></tr></thead>
+            <tbody>
+                {% for row in summary.member_rows %}
+                    <tr>
+                        <td>{{ row.member.name }}</td>
+                        <td>₹{{ row.paid|floatformat:2 }}</td>
+                        <td>₹{{ row.share|floatformat:2 }}</td>
+                        <td>{% if row.balance > 0 %}Receives{% elif row.balance < 0 %}Owes{% else %}Settled{% endif %} ₹{{ row.balance_amount|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">No members yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Suggested settlements</h2>
+    {% if summary.settlements %}
+        <ul class="settlements">
+            {% for item in summary.settlements %}
+                <li>{{ item.from }} pays {{ item.to }} ₹{{ item.amount|floatformat:2 }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="muted">Everyone is settled.</p>
+    {% endif %}
+</section>
+{% endblock %}

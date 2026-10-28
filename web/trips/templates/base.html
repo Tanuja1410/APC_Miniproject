@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}TripSplit{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'trips/style.css' %}">
+</head>
+<body>
+    <main class="page">
+        {% if messages %}
+            <div class="messages" aria-live="polite">
+                {% for message in messages %}
+                    <p class="message {{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        document.querySelectorAll("form[data-disable-on-submit]").forEach((form) => {
+            form.addEventListener("submit", () => {
+                const button = form.querySelector("button[type='submit']");
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = "Saving...";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+TripSplit Report - Test trip
+Generated: 2026-10-17 19:09:03
+Budget: 100.00
+Total Expense: 10.00
+Remaining Budget: 90.00
+
+Expenses and individual shares
+Lunch | Amount: 10.00 | Paid by: Alice
+  Alice: Share 5.00
+  Bob: Share 5.00
+
+Members
+Alice | Paid: 10.00 | Share: 5.00 | Balance: 5.00
+Bob | Paid: 0.00 | Share: 5.00 | Balance: -5.00
+
+Settlements
+Bob -> Alice : 5.00
