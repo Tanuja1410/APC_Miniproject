@@ -1,3 +1,3 @@
-from gui.app import run
+﻿"""Mini project"""
 
-run()
+print("Mini project")
